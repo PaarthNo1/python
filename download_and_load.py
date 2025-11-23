@@ -30,7 +30,9 @@ logging.getLogger('sqlalchemy').setLevel(logging.CRITICAL)
 
 DB_URL = os.getenv("DATABASE_URL")
 print(DB_URL)
-NC_URL = "https://data-argo.ifremer.fr/dac/aoml/1902043/profiles/R1902043_252.nc"
+# NC_URL = "https://data-argo.ifremer.fr/dac/aoml/1902043/profiles/R1902043_252.nc"
+NC_URL = "https://data-argo.ifremer.fr/dac/aoml/13857/profiles/R13857_001.nc"
+# NC_URL2="/.N"
 
 DATA_DIR = "data"
 os.makedirs(DATA_DIR, exist_ok=True)

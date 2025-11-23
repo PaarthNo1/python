@@ -63,7 +63,7 @@ TABLE measurements(id, float_id, cycle, profile_number, depth, temp, sal)
 
 Rules:
 - Use SELECT only.
-- If query needs lat/lon/time → floats table.
+-[]] If query needs lat/lon/time → floats table.
 - If query needs temp/sal/depth → measurements table.
 - If both are needed → JOIN floats f with measurements m ON (f.float_id = m.float_id AND f.cycle = m.cycle AND f.profile_number = m.profile_number).
 - Always use parameterized SQL: :p0, :p1, etc.
