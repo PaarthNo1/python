@@ -1,0 +1,18 @@
+{
+  "project": "OceanIQ",
+  "db": {
+    "tables": {
+      "floats": {
+        "columns": ["float_id", "cycle", "profile_number", "lat", "lon", "juld"]
+      },
+      "measurements": {
+        "columns": ["id", "float_id", "cycle", "profile_number", "depth", "temp", "sal"]
+      }
+    }
+  },
+  "policies": {
+    "max_rows": 500,
+    "disallowed_statements": ["delete", "update", "insert", "drop", "alter", "truncate"],
+    "default_limit": 200
+  }
+}

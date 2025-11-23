@@ -1,0 +1,212 @@
+Profile-specific metadata queries
+1.
+
+“Show me the metadata for float 1902043 cycle 252.”
+
+2.
+What is the date and location (lat/lon) of cycle 252 for float 1902043?
+“”
+
+3.
+
+“Give me the juld timestamp for float 1902043 cycle 252.”
+
+✅ Depth-based temperature/salinity queries
+
+(These will return actual useful values because your measurements table contains multiple depths.)
+
+4.
+
+“Show me the maximum temperature in profile 1902043 cycle 252.”
+
+5.
+
+“Show me the minimum temperature in this profile.”
+
+6.
+
+“What is the maximum salinity recorded in cycle 252?”
+
+7.
+
+“Find the deepest measurement and its temperature.”
+
+8.
+
+“Find the shallowest measurement and its salinity.”
+
+9.
+
+“List temperature values for depths < 10 meters for float 1902043 cycle 252.”
+
+10.
+
+“Show all salinity values between 50 and 150 meters depth.”
+
+✅ Vertical structure analysis (because you have many depth rows)
+11.
+
+“What is the depth of the maximum temperature in this profile?”
+
+12.
+
+“Find the thermocline region — where temperature changes rapidly — between 20 and 200 meters.”
+
+13.
+
+“List depth-temperature pairs sorted by temperature descending.”
+
+14.
+
+“Show temperature gradient (difference between consecutive depth levels).”
+(Your LLM will likely output SQL using window functions.)
+
+✅ Salinity structure queries
+15.
+
+“Find the halocline depth in this profile (largest salinity gradient).”
+
+16.
+
+“Show salinity values sorted from highest to lowest along with depth.”
+
+17.
+
+“Find the minimum salinity in cycle 252 and the depth at which it happens.”
+
+✅ Combined T/S analysis
+18.
+
+“Show depth, temperature, and salinity for this profile, sorted by depth.”
+
+19.
+
+“Find the depth where both temperature and salinity peak.”
+
+20.
+
+“Show all rows where temperature > 5°C and salinity > 34 PSU.”
+
+✅ Quality / anomaly detection queries
+21.
+
+“Find rows with unusually high temperature for this profile (top 5%).”
+
+22.
+
+“Find anomalies where temperature or salinity is null.”
+
+23.
+
+“Show rows where temperature increases with depth (inversion events).”
+
+# services/sql_ai_gemini/main.py
+
+import logging
+from typing import List
+
+from .config import LOG_PATH, DEFAULT_LIMIT
+from .rag_builder import build_rag_context
+from .gemini_client import generate_sql_from_prompt
+from .validator import validate_sql
+from .sanitizer import enforce_and_sanitize_params
+from .executor import execute_sql
+from .collapse import collapse_rows_to_profiles
+
+
+logger = logging.getLogger("nl_sql_audit")
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    fh = logging.FileHandler(LOG_PATH)
+    fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    logger.addHandler(fh)
+
+
+def nl_to_sql_and_execute(question: str, use_rag: bool = False, top_k: int = 5):
+    rag_context = None
+    retrieved_uids: List[str] = []
+
+    # ---------------- RAG context ----------------
+    if use_rag:
+        rag_context = build_rag_context(question, top_k=top_k)
+        if rag_context:
+            for line in rag_context.splitlines():
+                if line.startswith("UID:"):
+                    try:
+                        retrieved_uids.append(
+                            line.split("|")[0].replace("UID:", "").strip()
+                        )
+                    except Exception:
+                        pass
+
+    # ---------------- LLM SQL generation ----------------
+    payload = generate_sql_from_prompt(question, rag_context=rag_context)
+    logger.info("LLM payload sql (raw): %s", (payload.get("sql") or "")[:4000])
+    logger.info("LLM payload params: %s", payload.get("params"))
+
+    # ---------------- SQL validation ----------------
+    validate_sql(payload)
+
+    # ---------------- Param sanitization ----------------
+    params = enforce_and_sanitize_params(payload.get("params", {}))
+    payload["params"] = params
+
+    # ---------------- SQL execution ----------------
+    rows = execute_sql(payload)
+
+    logger.info(
+        "NLQ_EXECUTED | question=%s | use_rag=%s | retrieved=%s | sql=%s | params=%s | rows=%d",
+        question,
+        use_rag,
+        retrieved_uids,
+        (payload.get("sql") or "")[:2000],
+        params,
+        len(rows),
+    )
+
+    # ---------------- FIXED POST-PROCESSING ----------------
+    # RULE:
+    #   - If SQL returns more than one row → return them all, DO NOT collapse.
+    #   - Collapse only if exactly ONE row exists AND it contains measurement-level columns.
+
+    try:
+        # If DB returned multiple rows → return them exactly as-is
+        if isinstance(rows, list) and len(rows) > 1:
+            return {
+                "explain": payload.get("explain", ""),
+                "sql": payload.get("sql"),
+                "params": params,
+                "rows": rows,
+            }
+
+        # If no rows
+        if not rows:
+            return {
+                "explain": payload.get("explain", ""),
+                "sql": payload.get("sql"),
+                "params": params,
+                "rows": [],
+            }
+
+        # SINGLE ROW CASE → check if collapse is appropriate
+        first_row = rows[0]
+        if isinstance(first_row, dict) and "temp" in first_row:
+            final_limit = params.get("p0", DEFAULT_LIMIT)
+            collapsed = collapse_rows_to_profiles(rows, final_limit)
+            return {
+                "explain": payload.get("explain", ""),
+                "sql": payload.get("sql"),
+                "params": params,
+                "rows": collapsed,
+            }
+
+    except Exception as e:
+        logger.warning("Collapsing decision failed: %s", str(e))
+
+    # Default: return raw rows
+    return {
+        "explain": payload.get("explain", ""),
+        "sql": payload.get("sql"),
+        "params": params,
+        "rows": rows,
+    }
