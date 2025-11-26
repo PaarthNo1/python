@@ -1,0 +1,199 @@
+Profile-specific metadata queries
+1.
+
+“Show me the metadata for float 1902043 cycle 252.”
+
+2.
+What is the date and location (lat/lon) of cycle 252 for float 1902043?
+“”
+
+3.
+
+“Give me the juld timestamp for float 1902043 cycle 252.”
+
+✅ Depth-based temperature/salinity queries
+
+(These will return actual useful values because your measurements table contains multiple depths.)
+
+4.
+
+“Show me the maximum temperature in profile 1902043 cycle 252.”
+
+5.
+
+“Show me the minimum temperature in this profile.”
+
+6.
+
+“What is the maximum salinity recorded in cycle 252?”
+
+7.
+
+“Find the deepest measurement and its temperature.”
+
+8.
+
+“Find the shallowest measurement and its salinity.”
+
+9.
+
+“List temperature values for depths < 10 meters for float 1902043 cycle 252.”
+
+10.
+
+“Show all salinity values between 50 and 150 meters depth.”
+
+✅ Vertical structure analysis (because you have many depth rows)
+11.
+
+“What is the depth of the maximum temperature in this profile?”
+
+12.
+
+“Find the thermocline region — where temperature changes rapidly — between 20 and 200 meters.”
+
+13.
+
+“List depth-temperature pairs sorted by temperature descending.”
+
+14.
+
+“Show temperature gradient (difference between consecutive depth levels).”
+(Your LLM will likely output SQL using window functions.)
+
+✅ Salinity structure queries
+15.
+
+“Find the halocline depth in this profile (largest salinity gradient).”
+
+16.
+
+“Show salinity values sorted from highest to lowest along with depth.”
+
+17.
+
+“Find the minimum salinity in cycle 252 and the depth at which it happens.”
+
+✅ Combined T/S analysis
+18.
+
+“Show depth, temperature, and salinity for this profile, sorted by depth.”
+
+19.
+
+“Find the depth where both temperature and salinity peak.”
+
+20.
+
+“Show all rows where temperature > 5°C and salinity > 34 PSU.”
+
+✅ Quality / anomaly detection queries
+21.
+
+“Find rows with unusually high temperature for this profile (top 5%).”
+
+22.
+
+“Find anomalies where temperature or salinity is null.”
+
+23.
+
+“Show rows where temperature increases with depth (inversion events).”
+
+Core smoke (no date filter)
+
+“List recent profiles anywhere, limit 100.”
+
+“Show profiles inside lon 60–70 and lat 5–15, limit 200.”
+
+“Max temperature per profile from 2025-11-25 to 2025-11-26 inside lon 60–70, lat 5–15, limit 100.”
+
+“Depth–temperature–salinity for float 1902043 cycle 252, limit 500.”
+
+“Top-N hottest profiles on 25-11-25, limit 50.”
+
+“Top-N hottest profiles in Arabian Sea on 25 Nov 2025, limit 50.”
+
+“Mean temperature and salinity per profile from 2025-11-01 to 2025-11-15, limit 200.”
+
+“Highest salinity per profile for float 1902043 cycle 252, limit 50.”
+
+“Max temperature per profile between 2025-10-01 and 2025-12-01, limit 100.”
+
+“Pivot depth temperature and salinity for float 1902043 cycle 252 using measurements, limit 500.”
+
+Date parsing (explicit only — proves your executor fix)
+
+“Top-N hottest profiles today, limit 50.”
+
+“Top-N hottest profiles on 25-11-25, limit 50.”
+
+“Top-N hottest profiles on 25 nov 2025, limit 50.”
+
+“Top-N hottest profiles from 25-11-25 to 28-11-25 in Bay of Bengal, limit 50.”
+
+“Mean temperature and salinity per profile yesterday in Indian Ocean, limit 100.”
+
+Regions (use your exact bboxes)
+
+“Profiles in Arabian Sea, limit 200.”
+
+“Profiles in Bay of Bengal between 2025-11-01 and 2025-11-05, limit 200.”
+
+“Top-N hottest profiles in Southern Indian Ocean on 2025-11-10, limit 50.”
+
+“Max temperature per profile in Equatorial Indian Ocean from 2025-11-01 to 2025-11-15, limit 100.”
+
+“Mean temperature and salinity per profile in Northern Indian Ocean on 2025-11-20, limit 100.”
+
+Arrays vs. measurements (force measurements path)
+
+“Top-N hottest profiles via measurements on 2025-11-25, limit 50.”
+
+“Top-N hottest profiles via measurements in Arabian Sea on 2025-11-25, limit 50.”
+
+“Pivot depth for temperature and salinity via measurements for float 1902043 cycle 252, limit 400.”
+
+“List nitrate measurements range for float 1902043 cycle 252 (just to ensure non-temp/sal sensor path works).”
+
+“Top-N highest oxygen (doxy) values per profile in Indian Ocean on 2025-11-25, limit 50.” (should go to measurements; your model may need a template for non-temp/sal aggregates.)
+
+Spatial & PostGIS sanity (should still use lat/lon columns you expose)
+
+“Profiles within lon 65–67 and lat 7–9 on 2025-11-25, limit 100.”
+
+“Max temperature per profile within lon 50–80 lat 0–30 on 2025-11-25, limit 100.”
+
+QC / metadata checks (not all patterns exist—use to see refusal/gatekeeping works)
+
+“List meta variables for float 1902043, limit 50.”
+
+“Show traj points for float 1902043 between 2025-11-01 and 2025-11-10, limit 200.”
+
+“Show tech parameters for float 1902043 cycle 250, limit 50.”
+
+“List sensors in sensors_catalog, limit 100.”
+
+“Show measurements with qc flag = ‘good’ for float 1902043 cycle 252, limit 200.” (You’ll likely extend patterns to allow qc filters.)
+
+Performance / partitions (edge cases)
+
+“Max temperature per profile on 2002-01-15, limit 50.” (hits partitioned measurements_2002 if you route via measurements.)
+
+“Profiles on 2010-07-01, limit 50.”
+
+“Top-N hottest profiles on 2025-12-31, limit 50.” (boundary day)
+
+Frontend-friendly variations (column contract test)
+
+“Depth–temperature–salinity for float 1902043 cycle 252 sorted by depth, limit 1000.”
+
+“Top-N hottest profiles on 25-11-25 return float_id, cycle, profile_number, lat, lon, juld, and max temperature, limit 100.” (Checks alias max_temperature.)
+
+“Mean temp/sal per profile from 2025-11-01 to 2025-11-03, limit 100.” (Checks mean_temperature, mean_salinity.)
+
+Failure-mode tests (should cleanly error per your rules)
+
+“Show max temperature per profile, limit 50.” (No date given; if SQL requires :p5/:p6, you should return your explicit-date error.)
+
+“Give me something cool.” (Should trigger your domain+intent gate: fixed refusal text.)

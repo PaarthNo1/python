@@ -1,0 +1,50 @@
+# --- Core Python scientific stack ---
+numpy
+pandas
+xarray
+netCDF4
+tqdm
+
+# --- Database + ORM ---
+sqlalchemy>=2.0
+psycopg2-binary
+asyncpg
+alembic     # optional but recommended
+
+# --- FastAPI server ---
+fastapi
+uvicorn[standard]
+python-multipart
+python-dotenv
+
+# --- Plotting (PNG profile plots) ---
+matplotlib
+
+# --- AI / Embeddings / FAISS ---
+sentence-transformers
+faiss-cpu
+
+# --- Optional (only if you want ChatGPT responses) ---
+# openai
+
+google-generativeai
+
+# cd C:\oceanBackend\OceanIQB
+# venv\Scripts\activate
+# uvicorn main:app --reload
+# python -m uvicorn main:app --reload
+
+sqlparse
+python-dotenv
+google-generativeai 
+sentence-transformers 
+faiss-cpu 
+uvicorn
+
+# POST /nl_query
+# {
+#   "question": "Give me the warmest surface profiles near -35.6, 37.2",
+#   "use_rag": true,
+#   "top_k": 5
+# }
+

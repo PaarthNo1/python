@@ -1,0 +1,22 @@
+venv/
+.env
+# Python crap
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual env
+venv/
+.venv/
+
+# Your unwanted folder
+faiss_pipeline/vectore_store/
+faiss_schema_pipeline/vectore_store_schema
+data
+sql
+tools
+utilis
+nl_sql_audit.log
+test.py
+slk.py
+vector_store/
