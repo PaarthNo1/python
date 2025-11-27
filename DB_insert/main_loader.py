@@ -9,13 +9,13 @@ from auto_loader import auto_loader
 load_dotenv()
 
 # Read DB URL from environment; fallback URL is used only if .env is missing
-# DB_URL = os.getenv("DB_URL")
-# if not DB_URL:
-#     raise ValueError("❌ DB_URL environment variable missing!")
-
-DB_URL = os.getenv("DUMMY")
+DB_URL = os.getenv("DB_URL")
 if not DB_URL:
     raise ValueError("❌ DB_URL environment variable missing!")
+
+# DB_URL = os.getenv("DUMMY")
+# if not DB_URL:
+#     raise ValueError("❌ DB_URL environment variable missing!")
 
 
 # Create a highly optimized SQLAlchemy engine with connection pooling.
