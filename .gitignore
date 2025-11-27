@@ -1,89 +1,22 @@
-# -----------------------------
-# Python
-# -----------------------------
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.so
-
-# Virtual environment
 venv/
-ENV/
-env/
+.env
+# Python crap
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual env
+venv/
 .venv/
 
-# IDE
-.vscode/
-.idea/
-*.code-workspace
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Python dependency folders
-*.egg-info/
-.eggs/
-dist/
-build/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# Logs
-*.log
-logs/
-*.sqlite3
-
-# Environment variables
-.env
-.env.local
-.env.*.backup
-
-# -----------------------------
-# FastAPI / Uvicorn cache
-# -----------------------------
-.cache/
-*.pid
-*.db
-
-# -----------------------------
-# Database files
-# -----------------------------
+# Your unwanted folder
+faiss_pipeline/vectore_store/
+faiss_schema_pipeline/vectore_store_schema
+data
+sql
+tools
+utilis
+nl_sql_audit.log
+test.py
+slk.py
 vector_store/
-faiss_index.bin
-faiss_index.pkl
-faiss_store/
-*.db-shm
-*.db-wal
-
-# -----------------------------
-# Temp & generated files
-# -----------------------------
-tmp/
-temp/
-*.tmp
-*.bak
-
-# Uploaded files
-uploads/
-media/
-
-# -----------------------------
-# NetCDF or Large Data Files
-# -----------------------------
-*.nc
-*.nc4
-*.hdf
-*.h5
-*.bin
-*.gz
-*.zip
-
-# -----------------------------
-# OceanIQ Artifacts
-# -----------------------------
-# If your project generates processed chunks
-processed_chunks/
-embeddings/

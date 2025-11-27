@@ -3,10 +3,106 @@
   "db": {
     "tables": {
       "floats": {
-        "columns": ["float_id", "cycle", "profile_number", "lat", "lon", "juld"]
+        "columns": [
+          "float_id",
+          "cycle",
+          "profile_number",
+          "wmo_id",
+          "platform_type",
+          "project_name",
+          "pi_name",
+          "latitude",
+          "longitude",
+          "juld",
+          "source_file",
+          "created_at"
+        ]
+      },
+      "profiles": {
+        "columns": [
+          "float_id",
+          "cycle",
+          "profile_number",
+          "juld",
+          "lat",
+          "lon",
+          "pres",
+          "temp",
+          "psal",
+          "temp_qc",
+          "psal_qc",
+          "created_at"
+        ]
       },
       "measurements": {
-        "columns": ["id", "float_id", "cycle", "profile_number", "depth", "temp", "sal"]
+        "columns": [
+          "id",
+          "float_id",
+          "cycle",
+          "profile_number",
+          "juld",
+          "latitude",
+          "longitude",
+          "depth_m",
+          "sensor",
+          "value",
+          "qc",
+          "source_file",
+          "created_at"
+        ]
+      },
+      "meta_kv": {
+        "columns": [
+          "id",
+          "float_id",
+          "var_name",
+          "attr_name",
+          "value_text",
+          "dtype",
+          "shape",
+          "source_file",
+          "inserted_at"
+        ]
+      },
+      "traj": {
+        "columns": [
+          "id",
+          "float_id",
+          "cycle",
+          "profile_number",
+          "juld",
+          "lat",
+          "lon",
+          "position_qc",
+          "location_system",
+          "source_file",
+          "created_at"
+        ]
+      },
+      "tech": {
+        "columns": [
+          "id",
+          "float_id",
+          "cycle",
+          "param_name",
+          "param_value",
+          "units",
+          "source_file",
+          "collected_at",
+          "inserted_at"
+        ]
+      },
+      "sensors_catalog": {
+        "columns": [
+          "sensor_id",
+          "sensor_name",
+          "model",
+          "manufacturer",
+          "units",
+          "description",
+          "calibration_meta",
+          "created_at"
+        ]
       }
     }
   },
