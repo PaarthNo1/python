@@ -110,13 +110,6 @@ def fix_params_using_rag_or_question(
     return new_params
 
 def nl_to_sql_and_execute(question: str, top_k: int = 5):
-    # ----- HARD GATE -----
-    if not _is_ocean_relevant(question):
-        msg = "I can only help with ocean and ARGO data. Please ask a clear, specific question about ocean or ARGO data."
-        logger.info("HARD_GATE_REJECT | question=%s", question)
-        return {"type": "plain_text", "text": msg}
-    # ---------------------
-
     # RAG is ALWAYS ON
     rag_context = build_rag_context(question, top_k=top_k)
     retrieved_uids: List[str] = []
@@ -143,6 +136,12 @@ def nl_to_sql_and_execute(question: str, top_k: int = 5):
     if not isinstance(payload, dict):
         logger.info("LLM returned non-dict payload; returning plain text. payload_preview=%s", str(payload)[:200])
         return {"type": "plain_text", "text": str(payload)}
+
+    # ----- INTENT HANDLING (LLM-DRIVEN) -----
+    # If the LLM returns a specific type (conversation, irrelevant), return it directly.
+    if payload.get("type") in ("conversation", "irrelevant"):
+        return {"type": "plain_text", "text": payload.get("text", "")}
+    # ----------------------------------------
 
     if not all(k in payload for k in ("sql", "params", "explain")):
         logger.info("LLM payload missing SQL keys; treating as plain text. payload_keys=%s", list(payload.keys()))
