@@ -10,7 +10,10 @@ from .gemini_client import generate_sql_from_prompt
 from .validator import validate_sql
 from .sanitizer import enforce_and_sanitize_params
 from .executor import execute_sql
+from .executor import execute_sql
 from .collapse import collapse_rows_to_profiles
+from .router import classify_intent
+from .chat import handle_general_chat
 
 logger = logging.getLogger("nl_sql_audit")
 logger.setLevel(logging.INFO)
@@ -110,12 +113,19 @@ def fix_params_using_rag_or_question(
     return new_params
 
 def nl_to_sql_and_execute(question: str, top_k: int = 5):
-    # ----- HARD GATE -----
-    if not _is_ocean_relevant(question):
-        msg = "I can only help with ocean and ARGO data. Please ask a clear, specific question about ocean or ARGO data."
-        logger.info("HARD_GATE_REJECT | question=%s", question)
-        return {"type": "plain_text", "text": msg}
-    # ---------------------
+    # 1. Intent Classification
+    intent = classify_intent(question)
+
+    # 2. Handle Intents
+    if intent == "GENERAL_CHAT":
+        return handle_general_chat(question)
+    
+    if intent == "IRRELEVANT":
+        return {"type": "plain_text", "text": "I can only help with ocean and ARGO data. Please ask a clear, specific question about ocean or ARGO data."}
+
+    # 3. DATA_QUERY -> Proceed with existing logic
+    # (Optional: Keep _is_ocean_relevant as a secondary check if needed, but Router should handle it)
+    # if not _is_ocean_relevant(question): ...
 
     # RAG is ALWAYS ON
     rag_context = build_rag_context(question, top_k=top_k)

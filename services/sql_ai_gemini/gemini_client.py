@@ -17,13 +17,13 @@ if GEMINI_API_KEY:
 print(f"[Gemini] Using key fingerprint: {GEMINI_API_KEY[:5]}...{GEMINI_API_KEY[-5:]} (len={len(GEMINI_API_KEY)})")
 
 
-def gemini_generate_with_backoff(model, prompt: str, max_attempts: int = 3, retry_initial: float = 1.0):
+def gemini_generate_with_backoff(model, prompt: str, max_attempts: int = 3, retry_initial: float = 1.0, mime_type: str = "application/json"):
     delay = retry_initial
     for attempt in range(1, max_attempts + 1):
         try:
             return model.generate_content(
                 prompt,
-                generation_config={"temperature": 0, "response_mime_type": "application/json"}
+                generation_config={"temperature": 0, "response_mime_type": mime_type}
             )
         except Exception as e:
              print(f"[Gemini] Using key fingerprint: {GEMINI_API_KEY[:5]}...{GEMINI_API_KEY[-5:]} (len={len(GEMINI_API_KEY)})")

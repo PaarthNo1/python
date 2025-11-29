@@ -14,7 +14,7 @@ import pandas as pd
 
 # internal imports
 # import services.faiss_service as faiss_service
-# import services.db_service as db_service
+import services.db_service as db_service
 # from utils.plots import plot_profile
 from services.sql_ai_gemini.main import nl_to_sql_and_execute  # Gemini (RAG always on)
 
@@ -33,12 +33,10 @@ app.add_middleware(
 #     query: str
 #     top_k: Optional[int] = 5
 
-# class GeoSearchRequest(BaseModel):
-#     lat: float
-#     lon: float
-#     radius_km: Optional[float] = 200.0
-#     query: Optional[str] = None
-#     top_k: Optional[int] = 10
+class GeoSearchRequest(BaseModel):
+    lat: float
+    lon: float
+    top_k: Optional[int] = 10
 
 class NLQuery(BaseModel):
     question: str
@@ -54,14 +52,29 @@ def root():
 #     res = faiss_service.semantic_search(req.query, top_k=req.top_k)
 #     return JSONResponse(content=res)
 
-# @app.post("/geo_search")
-# def geo_search(req: GeoSearchRequest):
-#     fn = getattr(faiss_service, "geo_search", None) or getattr(faiss_service, "geo_semantic_search", None)
-#     if fn is None:
-#         raise HTTPException(status_code=500, detail="Geo search function not available.")
-#     return JSONResponse(content=fn(
-#         req.lat, req.lon, radius_km=req.radius_km, text_query=req.query, top_k=req.top_k
-#     ))
+@app.post("/nearest_floats")
+def nearest_floats(req: GeoSearchRequest):
+    """
+    Find floats near a specific location.
+    """
+    try:
+        results = db_service.get_nearest_floats(req.lat, req.lon, req.top_k)
+        return JSONResponse(content=results)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/float_location/{float_id}/{cycle}")
+def float_location(float_id: str, cycle: int):
+    """
+    Get the location of a specific float cycle, including details and sensor list.
+    """
+    try:
+        location = db_service.get_float_location(float_id, cycle)
+        if not location:
+            raise HTTPException(status_code=404, detail="Float location not found")
+        return location
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # @app.get("/profile/{float_id}/{cycle}")
 # def get_profile(float_id: str, cycle: int):
