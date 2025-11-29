@@ -17,8 +17,11 @@ import pandas as pd
 # import services.db_service as db_service
 # from utils.plots import plot_profile
 from services.sql_ai_gemini.main import nl_to_sql_and_execute  # Gemini (RAG always on)
+from routers import float_router
 
 app = FastAPI(title="OceanIQ Phase3 API", version="0.1")
+
+app.include_router(float_router.router)
 
 app.add_middleware(
     CORSMiddleware,
