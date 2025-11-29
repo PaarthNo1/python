@@ -1,0 +1,66 @@
+================================================================================
+🚀 OceanIQ Project - Future Roadmap (Aage Kya Karna Hai?)
+================================================================================
+Author: Antigravity (AI)
+Date: 2025-11-29
+
+Ab tak humne **Data Pipeline** complete kar li hai. Data download ho raha hai, process ho raha hai, aur database mein save ho raha hai.
+Lekin ye sirf "Backend" ka ek hissa hai. Ek full-fledged application banane ke liye abhi ye steps baaki hain:
+
+--------------------------------------------------------------------------------
+Phase 1: 🧠 Vector Embeddings & AI Search (The "Smart" Part)
+--------------------------------------------------------------------------------
+**Goal:** User ko natural language mein search karne ki power dena.
+**Example Query:** "Find floats in the Indian Ocean that measured low oxygen levels in 2024."
+
+**Tasks:**
+1.  **Text Generation:** Har float aur profile ka ek "Description" banana hoga (e.g., "Float 123 is an APEX float deployed by India...").
+2.  **Embedding Generation:** OpenAI ya Open Source model (HuggingFace) ka use karke in descriptions ko "Vectors" (Numbers) mein convert karna.
+3.  **pgvector Setup:** PostgreSQL mein `pgvector` extension enable karna taaki wo vectors store kar sake.
+4.  **Semantic Search Script:** Ek script jo user ki query ko vector mein badle aur database se "Nearest Neighbors" dhoondh kar laye.
+
+--------------------------------------------------------------------------------
+Phase 2: 🔌 API Development (The "Connector")
+--------------------------------------------------------------------------------
+**Goal:** Database ko duniya se connect karna (Frontend, Mobile App, etc.).
+**Tool:** FastAPI (Python)
+
+**Tasks:**
+1.  **Setup FastAPI:** Ek naya project folder `backend/` banana.
+2.  **Endpoints Create Karna:**
+    - `GET /floats`: Saare floats ki list.
+    - `GET /floats/{id}`: Specific float ki details.
+    - `GET /floats/{id}/trajectory`: Map ke liye rasta (GeoJSON).
+    - `POST /search`: AI Search endpoint.
+3.  **Security:** API Keys aur Rate Limiting lagana.
+
+--------------------------------------------------------------------------------
+Phase 3: 📊 Dashboard / Frontend (The "Face")
+--------------------------------------------------------------------------------
+**Goal:** Data ko sundar tarike se dikhana.
+**Tool:** React / Vue.js / Streamlit
+
+**Tasks:**
+1.  **Interactive Map:** Leaflet ya Mapbox ka use karke floats ki location dikhana.
+2.  **Charts:** Temperature/Salinity ke graphs banana (Plotly/Recharts).
+3.  **Search Bar:** Jahan user apni query type kare aur AI results dikhaye.
+
+--------------------------------------------------------------------------------
+Phase 4: ☁️ Deployment (The "Live" Stage)
+--------------------------------------------------------------------------------
+**Goal:** Project ko internet par live karna.
+
+**Tasks:**
+1.  **Dockerize:** Application ko Docker container mein pack karna.
+2.  **Cloud Hosting:** AWS, Google Cloud, ya Render par deploy karna.
+3.  **Automation:** GitHub Actions set karna taaki code push karte hi deploy ho jaye.
+
+--------------------------------------------------------------------------------
+Summary Checklist
+--------------------------------------------------------------------------------
+- [ ] Phase 1: Vector Embeddings (Next Immediate Step)
+- [ ] Phase 2: FastAPI Backend
+- [ ] Phase 3: Frontend Dashboard
+- [ ] Phase 4: Deployment
+
+================================================================================

@@ -1,10 +1,10 @@
-# meta_parser.py
 
 import os
 import numpy as np
 import xarray as xr
 import json
 import requests
+from dataset_cache import CACHE
 
 DATA_DIR = "data"
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -80,27 +80,23 @@ def safe_value_to_text(value):
 # ---------- MAIN PARSER ----------
 
 def parse_meta_nc(meta_url):
-    path = download_to_file(meta_url)
-
-    # Disable heavy CF decoding (fast loading)
-    ds = xr.open_dataset(
-        path,
-        decode_cf=False,
-        mask_and_scale=False,
-        decode_times=False
-    )
+    # Fast dataset loading (cached)
+    mds = CACHE.get_dataset(meta_url, decode_cf=False, mask_and_scale=False, decode_times=False)
 
     rows = []
     source_file = os.path.basename(meta_url)
 
-    # 1) FLOAT ID
+    # 1) FLOAT ID  (FIXED ds → mds)
     float_id = None
-    if "PLATFORM_NUMBER" in ds.variables:
-        raw = ds["PLATFORM_NUMBER"].values
-        float_id = decode_bytes_fast(raw)
+    if "PLATFORM_NUMBER" in mds.variables:
+        try:
+            raw = mds["PLATFORM_NUMBER"].values
+            float_id = decode_bytes_fast(raw)
+        except:
+            float_id = None
 
-    # 2) GLOBAL ATTRIBUTES
-    for k, v in ds.attrs.items():
+    # 2) GLOBAL ATTRIBUTES  (FIXED ds → mds)
+    for k, v in mds.attrs.items():
         rows.append({
             "float_id": float_id,
             "var_name": "_GLOBAL",
@@ -111,10 +107,10 @@ def parse_meta_nc(meta_url):
             "source_file": source_file
         })
 
-    # 3) VARIABLES
-    for var in ds.variables:
-        v = ds[var]
-        value_raw = v.values  # triggers load once
+    # 3) VARIABLES  (FIXED ds → mds)
+    for var in mds.variables:
+        v = mds[var]
+        value_raw = v.values
 
         rows.append({
             "float_id": float_id,
@@ -138,4 +134,4 @@ def parse_meta_nc(meta_url):
                 "source_file": source_file
             })
 
-    return rows
+    return rows  # FIXED

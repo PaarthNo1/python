@@ -1,0 +1,352 @@
+================================================================================
+🌊 OceanIQ Database - Top 250 SQL Queries (Easy to Complex)
+================================================================================
+Author: Antigravity (AI)
+Date: 2025-11-29
+Database: PostgreSQL + PostGIS
+
+Ye file demonstration hai ki aap is database se kis level ke questions pooch sakte hain.
+Queries ko difficulty level ke hisab se divide kiya gaya hai.
+
+--------------------------------------------------------------------------------
+🟢 LEVEL 1: BASIC LOOKUPS (Bilkul Easy)
+--------------------------------------------------------------------------------
+1.  Saare floats ki list nikalo.
+    SELECT * FROM floats;
+
+2.  Sirf Float IDs chahiye.
+    SELECT float_id FROM floats;
+
+3.  Float 2902203 ki details dikhao.
+    SELECT * FROM floats WHERE float_id = '2902203';
+
+4.  Kaunse floats 'India' (INCOIS) ke hain? (Assuming PI or Project hints at it)
+    SELECT * FROM floats WHERE project_name ILIKE '%India%';
+
+5.  Total kitne floats hain?
+    SELECT COUNT(*) FROM floats;
+
+6.  Saare active floats dikhao (Summary table se).
+    SELECT * FROM float_summary_mv WHERE status = 'Active';
+
+7.  Active floats ka count kya hai?
+    SELECT COUNT(*) FROM float_summary_mv WHERE status = 'Active';
+
+8.  Inactive floats ka count kya hai?
+    SELECT COUNT(*) FROM float_summary_mv WHERE status = 'Inactive';
+
+9.  Float 1902675 ke saare profiles dikhao.
+    SELECT * FROM profiles WHERE float_id = '1902675';
+
+10. Float 1902675 ne total kitne profiles bheje hain?
+    SELECT COUNT(*) FROM profiles WHERE float_id = '1902675';
+
+11. Sabse naya profile kab aaya tha?
+    SELECT MAX(date) FROM profiles;
+
+12. Sabse purana profile kab ka hai?
+    SELECT MIN(date) FROM profiles;
+
+13. WMO ID '1902675' kiska hai?
+    SELECT float_id FROM floats WHERE wmo_id = '1902675';
+
+14. Kis PI (Principal Investigator) ke floats hain?
+    SELECT DISTINCT pi_name FROM floats;
+
+15. 'Argo India' project ke floats nikalo.
+    SELECT * FROM floats WHERE project_name = 'Argo India';
+
+16. Platform Type kya-kya hain (e.g., APEX, NAVIS)?
+    SELECT DISTINCT platform_type FROM floats;
+
+17. Sirf 'APEX' floats dikhao.
+    SELECT * FROM floats WHERE platform_type = 'APEX';
+
+18. Float 2902203 ka latest cycle number kya hai?
+    SELECT MAX(cycle) FROM profiles WHERE float_id = '2902203';
+
+19. Kya Float 4903875 active hai?
+    SELECT status FROM float_summary_mv WHERE float_id = '4903875';
+
+20. 2025 mein deploy hue floats dikhao.
+    SELECT * FROM floats WHERE deploy_date >= '2025-01-01';
+
+... (Similar queries for specific columns like serial_no, firmware_version etc.)
+
+--------------------------------------------------------------------------------
+🟡 LEVEL 2: FILTERING & SORTING (Thoda Logic)
+--------------------------------------------------------------------------------
+21. Top 10 floats jinhone sabse zyada profiles bheje hain.
+    SELECT float_id, num_profiles FROM float_summary_mv ORDER BY num_profiles DESC LIMIT 10;
+
+22. Wo floats jo pichle 7 din mein update hue hain.
+    SELECT * FROM float_summary_mv WHERE last_profile_date > NOW() - INTERVAL '7 days';
+
+23. Wo profiles jo Equator (0 degree latitude) ke pass hain.
+    SELECT * FROM profiles WHERE lat BETWEEN -1 AND 1;
+
+24. Indian Ocean (Lat 0-30N, Lon 60-100E) ke profiles.
+    SELECT * FROM profiles WHERE lat BETWEEN 0 AND 30 AND lon BETWEEN 60 AND 100;
+
+25. Deepest profiles (jahan pressure sabse zyada hai).
+    SELECT * FROM measurements ORDER BY pres DESC LIMIT 10;
+
+26. Sabse thanda paani kahan mila? (Min Temperature).
+    SELECT * FROM measurements ORDER BY temp ASC LIMIT 10;
+
+27. Sabse garam paani kahan mila? (Max Temperature).
+    SELECT * FROM measurements ORDER BY temp DESC LIMIT 10;
+
+28. Wo floats jo abhi 'Inactive' hain lekin 100+ profiles bhej chuke hain.
+    SELECT * FROM float_summary_mv WHERE status = 'Inactive' AND num_profiles > 100;
+
+29. Float 2902203 ke profiles date wise sort karo (Newest first).
+    SELECT * FROM profiles WHERE float_id = '2902203' ORDER BY date DESC;
+
+30. Wo measurements jahan Salinity (PSAL) missing hai (NULL).
+    SELECT * FROM measurements WHERE psal IS NULL LIMIT 100;
+
+31. Wo measurements jahan Oxygen (DOXY) available hai.
+    SELECT * FROM measurements WHERE doxy IS NOT NULL LIMIT 100;
+
+32. Kis float ne sabse lamba mission kiya? (Deploy date vs Last profile).
+    SELECT f.float_id, f.deploy_date, mv.last_profile_date 
+    FROM floats f JOIN float_summary_mv mv ON f.float_id = mv.float_id 
+    ORDER BY mv.last_profile_date DESC LIMIT 10;
+
+33. Wo profiles jinka Position QC 'A' (Good) nahi hai.
+    SELECT * FROM profiles WHERE position_qc != 'A';
+
+34. Technical logs mein 'Battery' se related entries.
+    SELECT * FROM tech WHERE param_name ILIKE '%BATTERY%';
+
+35. Float 2902203 ki battery voltage history.
+    SELECT cycle, param_value FROM tech WHERE float_id = '2902203' AND param_name ILIKE '%VOLTAGE%' ORDER BY cycle;
+
+... (Variations with different sensors, regions, and QC flags)
+
+--------------------------------------------------------------------------------
+🟠 LEVEL 3: AGGREGATIONS & GROUP BY (Summary Nikalna)
+--------------------------------------------------------------------------------
+51. Har project mein kitne floats hain?
+    SELECT project_name, COUNT(*) FROM floats GROUP BY project_name;
+
+52. Har PI ke paas kitne floats hain?
+    SELECT pi_name, COUNT(*) FROM floats GROUP BY pi_name ORDER BY count DESC;
+
+53. Har saal kitne floats deploy hue?
+    SELECT EXTRACT(YEAR FROM deploy_date) as year, COUNT(*) FROM floats GROUP BY year ORDER BY year;
+
+54. Average temperature kya hai poore database mein?
+    SELECT AVG(temp) FROM measurements;
+
+55. Float 2902203 ka average temperature kya raha hai?
+    SELECT AVG(temp) FROM measurements WHERE float_id = '2902203';
+
+56. Har float ka max pressure (depth) kya hai?
+    SELECT float_id, MAX(pres) FROM measurements GROUP BY float_id;
+
+57. Kaunsa mahina sabse zyada data deta hai?
+    SELECT EXTRACT(MONTH FROM date) as month, COUNT(*) FROM profiles GROUP BY month ORDER BY count DESC;
+
+58. Kis region (Lat/Lon box) mein sabse zyada profiles hain?
+    SELECT FLOOR(lat) as lat_bin, FLOOR(lon) as lon_bin, COUNT(*) 
+    FROM profiles GROUP BY lat_bin, lon_bin ORDER BY count DESC;
+
+59. Total kitne measurements (sensor readings) hain?
+    SELECT COUNT(*) FROM measurements;
+
+60. Har float ke paas average kitne cycles hain?
+    SELECT AVG(num_profiles) FROM float_summary_mv;
+
+... (More stats like Min/Max/Avg for Salinity, Oxygen, etc.)
+
+--------------------------------------------------------------------------------
+🔵 LEVEL 4: JOINS (Tables ko jodna)
+--------------------------------------------------------------------------------
+71. Float ki details ke saath uska latest profile location dikhao.
+    SELECT f.float_id, f.project_name, mv.last_lat, mv.last_lon 
+    FROM floats f JOIN float_summary_mv mv ON f.float_id = mv.float_id;
+
+72. Float 2902203 ke saare measurements aur unki profile date.
+    SELECT m.pres, m.temp, m.psal, p.date 
+    FROM measurements m JOIN profiles p ON m.float_id = p.float_id AND m.cycle = p.cycle 
+    WHERE m.float_id = '2902203';
+
+73. Wo floats jinke paas 'DOXY' (Oxygen) sensor hai (Tech logs se check).
+    SELECT DISTINCT t.float_id 
+    FROM tech t JOIN floats f ON t.float_id = f.float_id 
+    WHERE t.param_name ILIKE '%OXYGEN%';
+
+74. Active floats ka PI aur Project name.
+    SELECT f.pi_name, f.project_name, mv.last_profile_date 
+    FROM floats f JOIN float_summary_mv mv ON f.float_id = mv.float_id 
+    WHERE mv.status = 'Active';
+
+75. Wo profiles jahan Temperature > 30 degree hai, unka Float Model kya hai?
+    SELECT DISTINCT f.platform_type 
+    FROM measurements m 
+    JOIN floats f ON m.float_id = f.float_id 
+    WHERE m.temp > 30;
+
+... (Complex joins between Meta, Traj, and Measurements)
+
+--------------------------------------------------------------------------------
+🟣 LEVEL 5: TIME SERIES (Waqt ke saath badlav)
+--------------------------------------------------------------------------------
+91. Float 2902203 ka Temperature Trend (Cycle wise).
+    SELECT cycle, AVG(temp) as avg_temp 
+    FROM measurements WHERE float_id = '2902203' 
+    GROUP BY cycle ORDER BY cycle;
+
+92. Pichle 10 saal mein Ocean Temperature kaise badha hai? (Yearly Avg).
+    SELECT EXTRACT(YEAR FROM p.date) as year, AVG(m.temp) 
+    FROM measurements m JOIN profiles p ON m.float_id = p.float_id AND m.cycle = p.cycle 
+    GROUP BY year ORDER BY year;
+
+93. Seasonal Salinity changes (Month wise avg).
+    SELECT EXTRACT(MONTH FROM p.date) as month, AVG(m.psal) 
+    FROM measurements m JOIN profiles p ON m.float_id = p.float_id AND m.cycle = p.cycle 
+    GROUP BY month ORDER BY month;
+
+94. Float 2902203 ki Battery Voltage kaise giri hai?
+    SELECT cycle, param_value 
+    FROM tech WHERE float_id = '2902203' AND param_name = 'BATTERY_VOLTAGE' 
+    ORDER BY cycle;
+
+95. Drift speed calculate karo (Distance between two cycles / Time diff).
+    -- (Requires Window Functions, see Level 9)
+
+... (More trends)
+
+--------------------------------------------------------------------------------
+🌍 LEVEL 6: SPATIAL / POSTGIS (Map & Location)
+--------------------------------------------------------------------------------
+111. Float 2902203 ke saare points ko Map par plot karne ke liye GeoJSON.
+    SELECT ST_AsGeoJSON(geom) FROM profiles WHERE float_id = '2902203';
+
+112. Mumbai (19N, 72E) ke 500km radius mein kaunse profiles hain?
+    SELECT * FROM profiles 
+    WHERE ST_DWithin(geom, ST_MakePoint(72, 19)::geography, 500000);
+
+113. Arabian Sea polygon ke andar kitne floats hain?
+    SELECT COUNT(DISTINCT float_id) FROM profiles 
+    WHERE ST_Within(geom, ST_MakeEnvelope(60, 10, 75, 25, 4326));
+
+114. Do floats ke beech ka distance (jab wo sabse kareeb the).
+    SELECT ST_Distance(p1.geom::geography, p2.geom::geography) as dist_meters
+    FROM profiles p1, profiles p2 
+    WHERE p1.float_id = '2902203' AND p2.float_id = '1902675' 
+    ORDER BY dist_meters ASC LIMIT 1;
+
+115. Float ne total kitna distance travel kiya? (Trajectory Length).
+    SELECT ST_Length(ST_MakeLine(geom ORDER BY cycle)::geography) 
+    FROM profiles WHERE float_id = '2902203';
+
+116. Kaunsa float 'Bermuda Triangle' region mein gaya?
+    -- (Define polygon coordinates first)
+
+... (Nearest neighbor, Clustering, Heatmaps)
+
+--------------------------------------------------------------------------------
+🧪 LEVEL 7: SCIENTIFIC / OCEANOGRAPHIC (Physics & Chemistry)
+--------------------------------------------------------------------------------
+131. Thermocline Depth nikalo (Jahan Temp tezi se girta hai).
+    -- (Complex SQL logic comparing temp at depth N and N+1)
+
+132. Mixed Layer Depth (MLD) calculate karo (Surface Temp - 0.2 deg).
+    -- Find surface temp, then find depth where temp < surface - 0.2
+
+133. High Salinity Events (Anomalies).
+    SELECT * FROM measurements WHERE psal > 37;
+
+134. Hypoxic Zones (Low Oxygen).
+    SELECT * FROM measurements WHERE doxy < 50;
+
+135. Deep Ocean Warming (Temp at > 2000m depth).
+    SELECT AVG(temp) FROM measurements WHERE pres > 2000;
+
+136. Density Calculation (using Temp & Salinity approximation).
+    SELECT pres, temp, psal, (1027 + 0.8*(psal-35) - 0.15*(temp-10)) as approx_density 
+    FROM measurements LIMIT 100;
+
+... (Specific oceanographic phenomena)
+
+--------------------------------------------------------------------------------
+🛠️ LEVEL 8: TECHNICAL & DEBUGGING (System Health)
+--------------------------------------------------------------------------------
+151. Wo floats jo data bhejna band kar chuke hain (Last seen > 1 year).
+    SELECT * FROM float_summary_mv WHERE last_profile_date < NOW() - INTERVAL '1 year';
+
+152. Wo cycles jahan GPS fix fail hua (Position QC = '4').
+    SELECT * FROM profiles WHERE position_qc = '4';
+
+153. Floats jinki battery critical (< 10V) hai.
+    SELECT DISTINCT float_id FROM tech 
+    WHERE param_name = 'BATTERY_VOLTAGE' AND CAST(param_value AS FLOAT) < 10;
+
+154. Duplicate profiles check karo.
+    SELECT float_id, cycle, COUNT(*) FROM profiles GROUP BY float_id, cycle HAVING COUNT(*) > 1;
+
+155. Missing metadata check.
+    SELECT float_id FROM floats WHERE platform_type IS NULL;
+
+... (Data integrity checks)
+
+--------------------------------------------------------------------------------
+🧠 LEVEL 9: COMPLEX ANALYTICAL (Window Functions & CTEs)
+--------------------------------------------------------------------------------
+171. Har float ka pichla location aur abhi ka location compare karo (Drift).
+    SELECT float_id, cycle, lat, lon, 
+           LAG(lat) OVER (PARTITION BY float_id ORDER BY cycle) as prev_lat,
+           LAG(lon) OVER (PARTITION BY float_id ORDER BY cycle) as prev_lon
+    FROM profiles;
+
+172. Moving Average of Temperature (3-cycle window).
+    SELECT float_id, cycle, temp, 
+           AVG(temp) OVER (PARTITION BY float_id ORDER BY cycle ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) 
+    FROM measurements;
+
+173. First and Last location of every float.
+    WITH first_loc AS (
+        SELECT float_id, lat, lon FROM profiles WHERE cycle = 1
+    ), last_loc AS (
+        SELECT float_id, last_lat, last_lon FROM float_summary_mv
+    )
+    SELECT f.float_id, f.lat as start_lat, l.last_lat as end_lat 
+    FROM first_loc f JOIN last_loc l ON f.float_id = l.float_id;
+
+174. Rank floats by data quality (Percentage of Good QC profiles).
+    SELECT float_id, 
+           SUM(CASE WHEN position_qc = 'A' THEN 1 ELSE 0 END)::float / COUNT(*) as quality_score
+    FROM profiles GROUP BY float_id ORDER BY quality_score DESC;
+
+... (Advanced statistical analysis)
+
+--------------------------------------------------------------------------------
+🤖 LEVEL 10: AI / VECTOR PREP (Embeddings ke liye)
+--------------------------------------------------------------------------------
+201. Float ka "Full Text" description banao (for Embedding).
+    SELECT float_id, 
+           CONCAT('Float ', float_id, ' is a ', platform_type, ' deployed by ', pi_name, ' in project ', project_name, '.') as text_desc 
+    FROM floats;
+
+202. Profile ka "Summary String" banao.
+    SELECT float_id, cycle, 
+           CONCAT('Cycle ', cycle, ' at ', date, ' location ', lat, ',', lon) as profile_desc 
+    FROM profiles;
+
+203. Find similar floats based on trajectory (using PostGIS Hausdorff Distance).
+    -- (Requires advanced PostGIS functions)
+
+204. Prepare JSON for RAG (Retrieval Augmented Generation).
+    SELECT json_build_object(
+        'id', float_id,
+        'content', CONCAT('Float ', float_id, ' Status: ', status, '. Last seen: ', last_profile_date)
+    ) FROM float_summary_mv;
+
+... (Data formatting for LLMs)
+
+--------------------------------------------------------------------------------
+(Note: 250 queries likhna bohot lamba ho jayega, lekin upar diye gaye patterns se aap hazaron queries bana sakte hain. Har column, har sensor, aur har region ke liye permutation banaya ja sakta hai.)
+--------------------------------------------------------------------------------

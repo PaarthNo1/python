@@ -1,9 +1,8 @@
-# tech_parser.py
 
 import xarray as xr
 import numpy as np
 import pandas as pd
-from utils import download_nc
+from dataset_cache import CACHE
 
 
 # ---------------- FAST HELPERS ----------------
@@ -152,8 +151,8 @@ def parse_tech_nc(url):
     FAST optimized version.
     """
 
-    nc_path = download_nc(url)
-    ds = xr.open_dataset(nc_path, decode_cf=False, mask_and_scale=False, decode_times=False)
+    ds = CACHE.get_dataset(url, decode_cf=False, mask_and_scale=False, decode_times=False)
+
 
     # float id
     float_id = fast_extract_float_id(ds["PLATFORM_NUMBER"].values)

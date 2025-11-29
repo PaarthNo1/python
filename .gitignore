@@ -20,3 +20,8 @@ nl_sql_audit.log
 test.py
 slk.py
 vector_store/
+
+# db_insertion documentation
+db_insertion/*.txt
+db_insertion/readme.md
+db_insertion/README.md

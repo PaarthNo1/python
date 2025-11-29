@@ -1,9 +1,11 @@
-# parse_meta.py  -- SUPER OPTIMIZED VERSION
 
+# parse_meta.py  -- SUPER OPTIMIZED VERSION
 import os
 import requests
 import xarray as xr
 import numpy as np
+from dataset_cache import CACHE
+
 
 DATA_DIR = "data"
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -89,11 +91,8 @@ def _find_first_existing_var(ds, candidates):
 
 # ----------------------------- MAIN PARSER -----------------------------
 def parse_meta(meta_url):
-    mp = download_to_file(meta_url)
-    if not mp:
-        raise RuntimeError("Meta download failed")
-
-    mds = xr.open_dataset(mp, decode_cf=False, mask_and_scale=False, decode_times=False)
+    # fast load using CACHE
+    mds = CACHE.get_dataset(meta_url, decode_cf=False, mask_and_scale=False, decode_times=False)
 
     # resolve variable names
     wmo_var = _find_first_existing_var(mds, _WMO_NAMES)
@@ -107,10 +106,17 @@ def parse_meta(meta_url):
     project_name = _decode_char_array_fast(mds[project_var].values) if project_var else None
     pi_name = _decode_char_array_fast(mds[pi_var].values) if pi_var else None
 
+    # Status variables
+    end_mission_status = _decode_char_array_fast(mds["END_MISSION_STATUS"].values) if "END_MISSION_STATUS" in mds else None
+    end_mission_date = _decode_char_array_fast(mds["END_MISSION_DATE"].values) if "END_MISSION_DATE" in mds else None
+
+    # SAFE RETURN (no error)
     return {
         "wmo_id": wmo_id,
         "platform_type": platform_type,
         "project_name": project_name,
         "pi_name": pi_name,
-        "meta_path": mp
+        "end_mission_status": end_mission_status,
+        "end_mission_date": end_mission_date,
+        "meta_path": os.path.basename(meta_url)   # FIXED 🟢
     }

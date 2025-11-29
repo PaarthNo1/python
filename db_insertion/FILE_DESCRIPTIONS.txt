@@ -1,0 +1,121 @@
+================================================================================
+📂 OceanIQ Project - File Descriptions (Kaunsi File Kya Karti Hai?)
+================================================================================
+Author: Antigravity (AI)
+Date: 2025-11-29
+
+Ye document aapko batayega ki is project mein kaunsi file kyun banayi gayi hai aur uska exact kaam kya hai.
+
+--------------------------------------------------------------------------------
+1. 🟢 CORE SCRIPTS (Jo System Chalate Hain)
+--------------------------------------------------------------------------------
+
+📄 **main_loader.py**
+- **Kyun banayi?**: Ye humara "Control Panel" hai. Jab humein manually kuch floats load karne hote hain, hum isi ko run karte hain.
+- **Kya karti hai?**:
+  - Isme `FLOAT_ID` ki list hoti hai (jo hum edit karte hain).
+  - Ye `auto_loader.py` ko call karta hai har float ke liye.
+  - Database connection setup karta hai.
+
+📄 **auto_loader.py**
+- **Kyun banayi?**: Ye project ka "Brain" 🧠 hai. Saara heavy lifting yahi karta hai.
+- **Kya karti hai?**:
+  - **Download:** Internet se NetCDF files download karta hai.
+  - **Multi-DAC:** Check karta hai float kis country ka hai (INCOIS, AOML, etc.).
+  - **Parsing:** `parsers/` folder ki scripts ko use karke data padhta hai.
+  - **Filtering:** Check karta hai ki data pehle se DB mein hai ya nahi (Skip duplicates).
+  - **Insertion:** Data ko database tables mein save karta hai.
+
+📄 **daily_update.py**
+- **Kyun banayi?**: Automation ke liye. Taaki humein roz manual run na karna pade.
+- **Kya karti hai?**:
+  - Database se "Active" floats ki list nikalti hai.
+  - Sirf unhi floats ke liye `auto_loader` chalati hai.
+  - End mein `float_summary_mv` (Materialized View) ko refresh karti hai.
+  - Ise aap Windows Task Scheduler (Cron Job) mein laga sakte hain.
+
+📄 **dataset_cache.py**
+- **Kyun banayi?**: Speed badhane ke liye 🚀.
+- **Kya karti hai?**:
+  - Jab hum NetCDF file download karte hain, ye use memory mein rakhti hai.
+  - Agar wahi file dobara chahiye ho, to disk se read nahi karna padta.
+  - `xarray` library ka use karke fast loading karti hai.
+
+--------------------------------------------------------------------------------
+2. 🛠️ UTILITY & MAINTENANCE (Jo System Ko Theek Rakhte Hain)
+--------------------------------------------------------------------------------
+
+📄 **optimize_db.py**
+- **Kyun banayi?**: Database ko fast rakhne ke liye.
+- **Kya karti hai?**:
+  - Tables par **Indices** banati hai (Search fast karne ke liye).
+  - **Materialized View** (`float_summary_mv`) banati aur refresh karti hai.
+  - Dashboard queries iske bina slow ho jayengi.
+
+📄 **check_db_stats.py**
+- **Kyun banayi?**: Reporting ke liye.
+- **Kya karti hai?**:
+  - Batati hai ki total kitne rows hain har table mein.
+  - Database ka size kya hai.
+  - Verification ke liye useful hai.
+
+📄 **check_mv_data.py**
+- **Kyun banayi?**: Debugging ke liye.
+- **Kya karti hai?**:
+  - Check karti hai ki `float_summary_mv` mein data sahi se populate hua hai ya nahi.
+
+📄 **.env**
+- **Kyun banayi?**: Security ke liye 🔒.
+- **Kya karti hai?**:
+  - Database ka Password aur URL yahan store hota hai.
+  - Code mein hardcode karne se bachti hai taaki password leak na ho.
+
+--------------------------------------------------------------------------------
+3. 📚 DOCUMENTATION (Jo Aapko Guide Karti Hain)
+--------------------------------------------------------------------------------
+
+📄 **PROJECT_DOCUMENTATION.txt**
+- **Kyun banayi?**: Pura project structure samjhane ke liye.
+- **Kya hai?**: Architecture, Pipeline, Algorithms, aur Future Scope ki detail.
+
+📄 **SAMPLE_SQL_QUERIES.txt** (250 Queries)
+- **Kyun banayi?**: Aapko SQL sikhane aur database ki power dikhane ke liye.
+- **Kya hai?**: Easy se lekar Complex tak 250 queries.
+
+📄 **SAMPLE_SQL_QUERIES_500.txt** (500 Queries)
+- **Kyun banayi?**: Extensive testing aur examples ke liye.
+- **Kya hai?**: 500 queries ka collection (Scientific, Spatial, AI prep included).
+
+📄 **readme.md**
+- **Kyun banayi?**: GitHub/GitLab par project upload karne ke liye.
+- **Kya hai?**: Installation instructions, Requirements, aur Quick Start guide.
+
+--------------------------------------------------------------------------------
+4. 📂 FOLDERS (Directories)
+--------------------------------------------------------------------------------
+
+📂 **database/**
+- **Kyun banayi?**: Database insertion logic ko alag rakhne ke liye.
+- **Files**:
+  - `insert_profile.py`: Profile data insert karta hai.
+  - `insert_measurements.py`: Sensor data insert karta hai.
+  - `insert_tech.py`, `insert_traj.py`, `insert_meta.py`: Baaki tables ke liye.
+  - `models.py`: SQLAlchemy Table definitions (Schema).
+
+📂 **parsers/**
+- **Kyun banayi?**: NetCDF files ko padhne ka logic alag rakhne ke liye.
+- **Files**:
+  - `profile.py`: Core profile data padhta hai.
+  - `measurements.py`: Temperature, Salinity data padhta hai.
+  - `traj.py`: Trajectory (Rasta) data padhta hai (Date fix yahan hua tha).
+  - `tech.py`: Technical logs padhta hai.
+  - `meta.py`: Metadata padhta hai.
+
+📂 **data/**
+- **Kyun banayi?**: Downloaded files store karne ke liye.
+- **Structure**: `data/{float_id}/*.nc`
+- Har float ka apna folder hota hai taaki mix na ho.
+
+--------------------------------------------------------------------------------
+✅ End of Descriptions
+--------------------------------------------------------------------------------

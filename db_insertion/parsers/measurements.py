@@ -1,11 +1,13 @@
-# parse_profile_measurements.py (optimized)
 
+# parse_profile_measurements.py (optimized)
 import os
 import re
 import requests
 import xarray as xr
 import numpy as np
 import pandas as pd
+from dataset_cache import CACHE
+
 
 DATA_DIR = "data"
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -124,13 +126,8 @@ def parse_profile_measurements(profile_url, prefer_adjusted=True):
     depth_m, sensor, value, qc, source_file
     """
 
-    # 1) Download
-    path = download_to_file(profile_url)
-    if not path:
-        raise RuntimeError("Profile download failed")
-
     # 2) Open dataset WITHOUT expensive CF decoding
-    ds = xr.open_dataset(path, decode_cf=False, mask_and_scale=False, decode_times=False)
+    ds = CACHE.get_dataset(profile_url, decode_cf=False, mask_and_scale=False, decode_times=False)
 
     # ---------- Helper to grab first/scalar values quickly ----------
     def _first_scalar(v):
@@ -156,7 +153,6 @@ def parse_profile_measurements(profile_url, prefer_adjusted=True):
 
     cycle = None
     if "CYCLE_NUMBER" in ds:
-        cycle = safe_int = None
         try:
             val = _first_scalar(ds["CYCLE_NUMBER"].values)
             cycle = int(val)
@@ -194,7 +190,8 @@ def parse_profile_measurements(profile_url, prefer_adjusted=True):
             jval = safe_float(_first_scalar(ds["JULD"].values))
             if jval is not None:
                 origin = pd.Timestamp("1950-01-01", tz="UTC")
-                juld_ts = origin + pd.to_timedelta(float(jval), unit="D")
+                # Fix: Use to_datetime with naive origin
+                juld_ts = pd.to_datetime(float(jval), unit="D", origin=pd.Timestamp("1950-01-01"))
         except Exception:
             juld_ts = None
 
@@ -372,5 +369,5 @@ def parse_profile_measurements(profile_url, prefer_adjusted=True):
             })
 
     df = pd.DataFrame(rows)
-    print(f"✔ Measurements parsed: {len(df)} rows (clean, no ERROR variables)")
+    # print(f"✔ Measurements parsed: {len(df)} rows (clean, no ERROR variables)")
     return df

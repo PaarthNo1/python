@@ -1,9 +1,46 @@
-# smart_sensor_parser_v2.py  (ULTRA OPTIMIZED)
 
+# smart_sensor_parser_v2.py  (ULTRA OPTIMIZED)
 import xarray as xr
 import numpy as np
 import json
-from utils import download_nc, clean_bytes, extract_float_id
+from dataset_cache import CACHE
+
+def clean_bytes(x):
+    if isinstance(x, (bytes, np.bytes_)):
+        return x.decode("utf-8", errors="ignore").strip()
+    if isinstance(x, (list, np.ndarray)):
+        out = []
+        for v in x:
+            if isinstance(v, (bytes, np.bytes_)):
+                out.append(v.decode("utf-8", errors="ignore").strip())
+            else:
+                out.append(str(v).strip())
+        return "".join(out).strip()
+    return str(x).strip()
+
+def extract_float_id(raw):
+    """
+    Convert PLATFORM_NUMBER like [b'1', b'9', b'0', ...] → "1900042"
+    """
+    if raw is None:
+        return None
+
+    # case: array of bytes
+    if isinstance(raw, (np.ndarray, list)):
+        s = ""
+        for v in raw:
+            if isinstance(v, (bytes, np.bytes_)):
+                v = v.decode("utf-8", errors="ignore")
+            v = str(v).strip()
+            if v and v not in ("\x00", " "):
+                s += v
+        return s.strip()
+
+    # single value
+    if isinstance(raw, (bytes, np.bytes_)):
+        return raw.decode("utf-8", errors="ignore").strip()
+
+    return str(raw).strip()
 
 
 # ----------------------------------------------------------
@@ -76,14 +113,10 @@ def parse_sensors_hybrid(profile_url, meta_url, tech_url, smart_fill=True):
     # ------------------------------------------------------
     # 1) OPEN **ALL FILES ONCE** (BIG SPEED BOOST)
     # ------------------------------------------------------
-    prof_path = download_nc(profile_url)
-    ds_prof = xr.open_dataset(prof_path, decode_cf=False)
+    ds_prof = CACHE.get_dataset(profile_url, decode_cf=False, mask_and_scale=False, decode_times=False)
+    ds_tech = CACHE.get_dataset(tech_url, decode_cf=False, mask_and_scale=False, decode_times=False)
+    ds_meta = CACHE.get_dataset(meta_url, decode_cf=False, mask_and_scale=False, decode_times=False)
 
-    tech_path = download_nc(tech_url)
-    ds_tech = xr.open_dataset(tech_path, decode_cf=False)
-
-    meta_path = download_nc(meta_url)
-    ds_meta = xr.open_dataset(meta_path, decode_cf=False)
 
     sensors = {}  # key = base sensor name (TEMP, PSAL ...)
 

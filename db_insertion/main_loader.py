@@ -1,5 +1,3 @@
-#main_loader.py
-
 import os
 import sqlalchemy
 from dotenv import load_dotenv
@@ -11,12 +9,7 @@ load_dotenv()
 # Read DB URL from environment; fallback URL is used only if .env is missing
 DB_URL = os.getenv("DB_URL")
 if not DB_URL:
-    raise ValueError("❌ DB_URL environment variable missing!")
-
-# DB_URL = os.getenv("DUMMY")
-# if not DB_URL:
-#     raise ValueError("❌ DB_URL environment variable missing!")
-
+    raise ValueError("❌ DB_URL not found in .env file. Please set it.")
 
 # Create a highly optimized SQLAlchemy engine with connection pooling.
 # Pooling is critical when using remote databases like Aiven because
@@ -31,24 +24,22 @@ engine = sqlalchemy.create_engine(
 )
 
 # Float ID being processed — kept exactly as given
-# FLOAT_ID = [ 1902785, 2903893, 2903952
-#     4903837, 5907140, 5907176, 6990612, 7901130, 
-#     7902248, 7902244, 2902224, 2902295, 2903894, 
-#     2903895, 2903988, 2902296, 3902573, 3902629, 6990715,
-#     1902670, 1902673, 3902630, 4903874, 7902249,
-#     7902287, 1902767, 2903892, 2903950, 3902669,
-#     4903777, 4903869, 5907139, 5907171, 6990608,
-#     6990614, 7901131, 7902243, 2902224, 2903989,
-#     5907085, 6990613, 7901131, 2902222, 2902223,
-#      6990612, 6990606, 6990679,
-#     7901131, 7902170, 7902251
-# ]
+# FLOAT_ID = [1902675, 2902203, 2903951, 4903875, 5907082, 5907179, 5907180, 6990618]
 
+# FLOAT_ID = [7902200] #2025-11-10
+# FLOAT_ID = [2902273, 2903953, 4903838, 4903876, 5907179, 7902250, 7902200] #2025-11-19
+# FLOAT_ID = [1902676, 2903891, 4903776, 4903877, 6990617, 6990678, 6990716, 7901126, 7902242, 7902246, 7902247] #2025-11-20
+# FLOAT_ID = [1902674, 2903954, 3902581, 3902668, 4903783, 4903873, 5907092, 5907138, 6990609, 6990611, 6990615, 6990705, 7901127, 7902287] #2025-11-21
+# FLOAT_ID = [1902767, 2903892, 2903950, 3902669, 4903777, 4903869, 5907139, 5907171, 6990608, 6990614, 7901136, 7902243] #2025-11-22
+# FLOAT_ID = [2902295, 2903894, 2903895, 2903988, 3902573, 3902629, 6990715, 7902244] #2025-11-23
+# FLOAT_ID = [1902785, 2903893, 2903952, 4903837, 5907140, 5907176, 6990612, 7901130, 7902248] #2025-11-24
+# FLOAT_ID = [1902670, 1902673, 2902296, 3902630, 4903874, 7902249, 7902251] #2025-11-25
+# FLOAT_ID = [2902224, 2902306, 2903989, 5907085, 6990613, 6990616, 6990679, 7901131, 7902170] #2025-11-26 
+# FLOAT_ID = [1902675, 2902203, 2903951, 4903875, 5907082, 5907180, 5907192, 6990618] #2025-11-27
+# FLOAT_ID = [1902669, 1902671, 2902222, 2902272, 4903775, 5907083] #2025-11-28
+# FLOAT_ID = [1902672, 2902223, 5907084, 6990610, 7901125, 7901128] #2025-11-29
 
-
-FLOAT_ID = [2902222, 2902223,
-    2902224, 2902306, 6990616,
-    7901131, 7902170, 6990618, 5907082]
+FLOAT_ID = [1902043]
 
 for selected in FLOAT_ID:
     selected = str(selected)  # force cast to string
@@ -75,8 +66,6 @@ for selected in FLOAT_ID:
 # # Load environment variables
 # load_dotenv()
 # DB_URL = os.getenv("DB_URL")
-# if not DB_URL:
-#     raise ValueError("❌ DB_URL environment variable missing!")
 # engine = sqlalchemy.create_engine(DB_URL, pool_pre_ping=True, future=True)
 
 # BASE_URL = "https://data-argo.ifremer.fr/dac/incois/"
@@ -133,7 +122,7 @@ for selected in FLOAT_ID:
 # # Run
 # auto_run()
 
-# FLOAT_ID = [4903837, 5907140, 5907176, 6990612, 7901130, 7902249, 6990715, 7902244, 2902224, 2902295, 2903894, 2903895, 2903988, 3902573, 3902629]
+# FLOAT_ID = [4903837, 5907140, 5907176, 6990612, 7901130, 7902249, 6990715, 7902244, 2902224, 2902295, 2903894, 2903895, 2903988, 3902573, 3902629, 6990715]
 
 # for selected in FLOAT_ID:
 #          print(f"⚙ Running auto_loader for {selected} ...")
