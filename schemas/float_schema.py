@@ -46,5 +46,45 @@ class FloatResponse(BaseModel):
     updated_at: Optional[datetime] = None
     remarks: Optional[str] = None
 
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    remarks: Optional[str] = None
+    
+    # Links to detailed data
+    links: Optional[Dict[str, str]] = None
+
+    class Config:
+        from_attributes = True
+
+# New Schemas for Detailed Data
+class TrajResponse(BaseModel):
+    id: int
+    cycle: int
+    juld: Optional[datetime] = None
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+    position_qc: Optional[str] = None
+    measurement_code: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
+class TechResponse(BaseModel):
+    id: int
+    cycle: int
+    param_name: str
+    param_value: Optional[str] = None
+    units: Optional[str] = None
+    collected_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+class MetaKVResponse(BaseModel):
+    id: int
+    var_name: Optional[str] = None
+    attr_name: Optional[str] = None
+    value_text: Optional[str] = None
+    
     class Config:
         from_attributes = True

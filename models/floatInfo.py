@@ -49,3 +49,48 @@ class FloatDetails(Base):
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
     remarks = Column(String)
+
+# 3️⃣ Trajectory Table
+class Traj(Base):
+    __tablename__ = "traj"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    float_id = Column(String(50), nullable=False)
+    cycle = Column(Integer, nullable=False)
+    profile_number = Column(Integer)
+    juld = Column(TIMESTAMP)
+    lat = Column(Float)
+    lon = Column(Float)
+    position_qc = Column(String(1))
+    location_system = Column(String(10))
+    measurement_code = Column(String(10))
+    satellite_name = Column(String(50))
+    juld_qc = Column(String(1))
+    source_file = Column(String(255))
+    # geom column is PostGIS geometry, we skip mapping it for simple API responses or use GeoAlchemy2 if needed
+
+# 4️⃣ Technical Data Table
+class Tech(Base):
+    __tablename__ = "tech"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    float_id = Column(String(50), nullable=False)
+    cycle = Column(Integer, nullable=False)
+    param_name = Column(String(100))
+    param_value = Column(String(255))
+    units = Column(String(50))
+    collected_at = Column(TIMESTAMP)
+    source_file = Column(String(255))
+
+# 5️⃣ Metadata Key-Value Table
+class MetaKV(Base):
+    __tablename__ = "meta_kv"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    float_id = Column(String(50), nullable=False)
+    var_name = Column(String(100))
+    attr_name = Column(String(100))
+    value_text = Column(String)
+    dtype = Column(String(20))
+    shape = Column(String(20))
+    source_file = Column(String(255))
